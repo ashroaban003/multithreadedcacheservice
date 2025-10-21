@@ -110,8 +110,63 @@
 
 //package com.example.multithreadedcacheservice.MultiCache;
 
+
+// // Time to Live Cache
+
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+class CacheEntry{
+    private final int value;
+    private final long expiryTime;
+    CacheEntry(int value,long sec){
+         this.value = value;
+         expiryTime = System.currentTimeMillis()+sec*1000;
+    }
+    public int getvalue(){
+        return value;
+    }
+    public Boolean isExpired(){
+        return System.currentTimeMillis() > expiryTime;
+    }
+}
+
+
+class InMemoryCache{
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private ReadLock readLock = lock.readLock();
+    private WriteLock writeLock = lock.writeLock();
+    private ConcurrentHashMap<Integer,CacheEntry> cache = new ConcurrentHashMap<>();
+
+    public void put(int k,int v, int s) {
+        writeLock.lock();
+        try{
+        cache.put(k, new CacheEntry(v, s));
+        }finally{
+            writeLock.unlock();
+        }
+    }
+    public int get(int k){
+        readLock.lock();
+        try{
+            if(cache.get(1)!=null)System.out.println(cache.get(1).getvalue());
+
+        }finally{
+            readLock.unlock();
+        }
+    }
+
+
+}
 class CacheTest {
     public static void main(String[] args) {
+        final ConcurrentHashMap<Integer,Integer> cache = new ConcurrentHashMap<>();
+        cache.put(1,10);
+        cache.put(2,20);
+        System.out.println(cache.get(3));
         System.out.println("sd");
     }
     
