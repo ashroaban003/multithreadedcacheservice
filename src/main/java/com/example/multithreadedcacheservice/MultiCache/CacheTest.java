@@ -114,7 +114,11 @@
 // // Time to Live Cache
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -140,6 +144,27 @@ class InMemoryCache{
     private ReadLock readLock = lock.readLock();
     private WriteLock writeLock = lock.writeLock();
     private ConcurrentHashMap<Integer,CacheEntry> cache = new ConcurrentHashMap<>();
+    private ScheduledExecutorService cleaner = Executors.newSingleThreadScheduledExecutor();
+
+    InMemoryCache(){
+        // try{
+        // Thread thread1 = new Thread(()-> GarbageThread());
+        // thread1.start();
+        // }catch(Exception e){
+        //     System.out.println("error while garbage cleaning!");
+        // }
+        startCleanupTask();
+    }
+        private void startCleanupTask() {
+                cleaner.scheduleAtFixedRate(() -> {
+                    try {
+                        System.out.println("started cleaning");;
+                        clean();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }, 10000, 10000, TimeUnit.MILLISECONDS);
+        }
 
     public void put(int k,int v, int s) {
         writeLock.lock();
@@ -149,13 +174,42 @@ class InMemoryCache{
             writeLock.unlock();
         }
     }
-    public int get(int k){
+    //Method overloading
+    public void put(int k,int v){
+        put(k,v,10); //keeping default expiry time as 10 sec
+    }
+    public void get(int k){
         readLock.lock();
         try{
-            if(cache.get(1)!=null)System.out.println(cache.get(1).getvalue());
+            if(cache.get(1)!=null) System.out.println(cache.get(1).getvalue());
+            else System.out.println("not present");
 
         }finally{
             readLock.unlock();
+        }
+    }
+    
+    public void GarbageThread(){
+        try{
+            while (true) {
+                System.out.println("shreya !");
+                Thread.sleep(4000);
+            }
+       }catch(Exception e){
+          System.out.println("d");
+       }
+    }
+    public void clean(){
+        writeLock.lock();
+        try{
+            for(Map.Entry<Integer,CacheEntry> entry : cache.entrySet()){
+                if(entry.getValue().isExpired()){
+                    cache.remove(entry.getKey());
+                }
+            }
+            System.out.println("cleanup finished");
+        }finally{
+            writeLock.unlock();
         }
     }
 
@@ -168,6 +222,22 @@ class CacheTest {
         cache.put(2,20);
         System.out.println(cache.get(3));
         System.out.println("sd");
+
+        // lets use TTL cache here
+        final InMemoryCache inMemoryCache = new InMemoryCache();
+        try{
+        inMemoryCache.put(1, 10,5);
+        Thread.sleep(3000);
+        inMemoryCache.put(2,20 );
+        Thread.sleep(5000);
+        inMemoryCache.put(3, 30,3);
+   
+        inMemoryCache.get(1);
+        Thread.sleep(5000);
+        inMemoryCache.get(1);
+        }catch(Exception e){
+
+        }
     }
     
 }
