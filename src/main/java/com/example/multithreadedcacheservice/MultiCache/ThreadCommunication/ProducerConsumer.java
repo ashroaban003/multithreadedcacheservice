@@ -1,4 +1,4 @@
-//package com.example.multithreadedcacheservice.MultiCache.ThreadCommunication;
+package com.example.multithreadedcacheservice.MultiCache.ThreadCommunication;
 
 class producer_consumer{
     private int data;
