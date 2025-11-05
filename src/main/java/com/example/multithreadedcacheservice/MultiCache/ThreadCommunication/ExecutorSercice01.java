@@ -1,5 +1,6 @@
 //package com.example.multithreadedcacheservice.MultiCache.ThreadCommunication;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,8 +18,10 @@ public class ExecutorSercice01 {
               System.out.println(x);
             });
         }
+        Callable<Integer> callable = () -> 13;
+        Future<Integer> f1=ex.submit(callable);
         Future<Integer> future = ex.submit(()->69);
-        System.out.println("the value promised to get is - "+ future.get());
+        System.out.println("the value promised to get is - "+ future.get() + " - "+f1.get());
         ex.shutdown();
         try{
             ex.awaitTermination(100, TimeUnit.SECONDS);
