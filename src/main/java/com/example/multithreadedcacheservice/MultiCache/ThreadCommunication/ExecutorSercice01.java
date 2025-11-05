@@ -1,11 +1,13 @@
 //package com.example.multithreadedcacheservice.MultiCache.ThreadCommunication;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class ExecutorSercice01 {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, ExecutionException{
         ExecutorService ex = Executors.newFixedThreadPool(3);
         long startTime = System.currentTimeMillis();
         for(int i=0;i<10;i++){
@@ -15,6 +17,8 @@ public class ExecutorSercice01 {
               System.out.println(x);
             });
         }
+        Future<Integer> future = ex.submit(()->69);
+        System.out.println("the value promised to get is - "+ future.get());
         ex.shutdown();
         try{
             ex.awaitTermination(100, TimeUnit.SECONDS);
