@@ -10,6 +10,20 @@ public class Executor3 {
         int ns = 3;
         ExecutorService executorService = Executors.newFixedThreadPool(ns);
         CountDownLatch latch = new CountDownLatch(ns);
+
+        for(int i=0;i<3;i++){
+            executorService.submit(()->{
+                try{
+                    System.out.println("nah, ! win");
+                }finally{
+                    latch.countDown();
+                }
+                
+            });
+        }
+        latch.await();
+        System.out.println("All task completed!");
+        executorService.shutdown();
         
     }
 }
